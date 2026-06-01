@@ -31,3 +31,13 @@ export interface Task {
   start_date?: string;
   order: number;
 }
+
+export interface TaskPayload {
+  title: string;
+  description?: string;
+  status?: string;
+  priority?: string;
+  order?: number;
+  due_date?: string;
+  start_date?: string;
+}

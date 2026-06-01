@@ -1,18 +1,25 @@
 import { api } from "./api";
 
-export const getLists = async () => {
-  const res = await api.get("/lists/");
+export const getWorkspaceLists = async (
+  workspaceId: number
+) => {
+  const res = await api.get(
+    `/workspaces/${workspaceId}/lists/`
+  );
+
   return res.data;
 };
 
 export const createList = async (
-  workspace: number,
+  workspaceId: number,
   name: string
 ) => {
-  const res = await api.post("/lists/", {
-    workspace,
-    name,
-  });
+  const res = await api.post(
+    `/workspaces/${workspaceId}/lists/`,
+    {
+      name,
+    }
+  );
 
   return res.data;
 };

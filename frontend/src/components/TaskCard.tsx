@@ -1,25 +1,49 @@
+"use client";
+
 import { Task } from "@/types/api";
+import { deleteTask } from "@/services/task";
 
 interface Props {
   task: Task;
+  onDelete?: () => void;
 }
 
 export default function TaskCard({
   task,
+  onDelete,
 }: Props) {
-  return (
-    <div className="bg-white border rounded p-3">
-      <h3 className="font-semibold">
-        {task.title}
-      </h3>
+  const remove = async () => {
+    await deleteTask(task.id);
 
-      <p className="text-sm">
+    onDelete?.();
+  };
+
+  return (
+    <div className="bg-white p-3 rounded border">
+
+      <div className="flex justify-between">
+
+        <h3 className="font-semibold">
+          {task.title}
+        </h3>
+
+        <button
+          onClick={remove}
+          className="text-red-500"
+        >
+          ✕
+        </button>
+
+      </div>
+
+      <p className="text-sm mt-2">
         {task.description}
       </p>
 
-      <span>
+      <div className="mt-3 text-xs">
         {task.priority}
-      </span>
+      </div>
+
     </div>
   );
 }
