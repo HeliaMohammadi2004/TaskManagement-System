@@ -95,7 +95,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # --- تنظیمات اختصاصی ما ---
 
 # اجازه به تمام دامنه‌ها برای اتصال (CORS)
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
+
 
 # تنظیم Rest Framework برای استفاده از JWT
 REST_FRAMEWORK = {
