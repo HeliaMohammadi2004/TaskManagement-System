@@ -1,99 +1,46 @@
 "use client";
 
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-
-import toast from "react-hot-toast";
-
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getWorkspaces,
   createWorkspace,
   updateWorkspace,
   deleteWorkspace,
+  Workspace,
 } from "@/services/workspace";
 
-export function useWorkspaces() {
-  return useQuery({
+export const useWorkspaces = () => {
+  const queryClient = useQueryClient();
+
+  const query = useQuery<Workspace[]>({
     queryKey: ["workspaces"],
     queryFn: getWorkspaces,
+    staleTime: 1000 * 60,
   });
-}
 
-export function useCreateWorkspace() {
-  const queryClient =
-    useQueryClient();
-
-  return useMutation({
-    mutationFn: createWorkspace,
-
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["workspaces"],
-      });
-
-      toast.success(
-        "Workspace created"
-      );
-    },
-
-    onError: () => {
-      toast.error(
-        "Failed creating workspace"
-      );
-    },
+  const create = useMutation({
+    mutationFn: (payload: { name: string; description?: string }) =>
+      createWorkspace(payload),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces"] }),
   });
-}
 
-export function useUpdateWorkspace() {
-  const queryClient =
-    useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: number;
-      data: {
-        name?: string;
-        description?: string;
-      };
-    }) =>
-      updateWorkspace(
-        id,
-        data
-      ),
-
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["workspaces"],
-      });
-
-      toast.success(
-        "Workspace updated"
-      );
-    },
+  const update = useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: Partial<Workspace> }) =>
+      updateWorkspace(id, payload),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces"] }),
   });
-}
 
-export function useDeleteWorkspace() {
-  const queryClient =
-    useQueryClient();
-
-  return useMutation({
-    mutationFn: deleteWorkspace,
-
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["workspaces"],
-      });
-
-      toast.success(
-        "Workspace deleted"
-      );
-    },
+  const remove = useMutation({
+    mutationFn: (id: number) => deleteWorkspace(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces"] }),
   });
-}
+
+  return {
+    data: query.data,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    create,
+    update,
+    remove,
+  };
+};

@@ -1,49 +1,59 @@
 "use client";
 
 import { useState } from "react";
-import { createWorkspace } from "@/services/workspace";
+import { useWorkspaces } from "@/hooks/useWorkspaces";
 
-interface Props {
-  onCreated: () => void;
-}
-
-export default function CreateWorkspaceForm({ onCreated }: Props) {
+export default function CreateWorkspaceForm() {
+  const { create } = useWorkspaces();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
 
-  const submit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    await createWorkspace({
-      name,
-      description,
-    });
-
+    if (!name.trim()) return;
+    await create.mutateAsync({ name, description });
     setName("");
     setDescription("");
-
-    onCreated();
+    setIsOpen(false);
   };
 
   return (
-    <form onSubmit={submit} className="border rounded p-4 bg-white mb-6">
-      <h2 className="font-bold mb-4">Create Workspace</h2>
-
-      <input
-        className="border p-2 w-full mb-2"
-        placeholder="Workspace Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-
-      <textarea
-        className="border p-2 w-full mb-2"
-        placeholder="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
-
-      <button className="bg-black text-white px-4 py-2 rounded">Create</button>
-    </form>
+    <div className="mb-6">
+      {!isOpen ? (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+        >
+          + New Workspace
+        </button>
+      ) : (
+        <form onSubmit={handleSubmit} className="bg-gray-50 p-4 rounded-lg border space-y-3">
+          <input
+            type="text"
+            placeholder="Workspace name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full border p-2 rounded"
+            required
+          />
+          <textarea
+            placeholder="Description (optional)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full border p-2 rounded"
+            rows={2}
+          />
+          <div className="flex gap-2">
+            <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">
+              Create
+            </button>
+            <button type="button" onClick={() => setIsOpen(false)} className="border px-4 py-2 rounded">
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
   );
 }

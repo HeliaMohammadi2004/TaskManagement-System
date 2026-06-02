@@ -7,7 +7,7 @@ export interface User {
 export interface Workspace {
   id: number;
   name: string;
-  description: string;
+  description?: string;
   owner?: User;
   created_at?: string;
   updated_at?: string;
@@ -24,8 +24,8 @@ export interface Task {
   id: number;
   list: number;
   title: string;
-  description: string;
-  status: "TODO" | "IN PROGRESS" | "DONE";
+  description?: string;
+  status: "TODO" | "IN PROGRESS" | "DONE";   // اصلاح شد: به جای IN_PROGRESS
   priority: "LOW" | "MEDIUM" | "HIGH";
   due_date?: string;
   start_date?: string;

@@ -1,58 +1,30 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { List, Task } from "@/types/api";
-import { getWorkspaceLists } from "@/services/list";
-import { getListTasks } from "@/services/task";
+import { useLists } from "@/hooks/useLists";
 import ListColumn from "@/components/ListColumn";
+import CreateListForm from "@/components/CreateListForm";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function WorkspacePage() {
   const params = useParams();
-
   const workspaceId = Number(params.id);
+  const { data: lists, isLoading: listsLoading } = useLists(workspaceId);
 
-  const [lists, setLists] = useState<List[]>([]);
-
-  const [tasksMap, setTasksMap] = useState<Record<number, Task[]>>({});
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const fetchedLists = await getWorkspaceLists(workspaceId);
-
-        setLists(fetchedLists);
-
-        const taskStore: Record<number, Task[]> = {};
-
-        for (const list of fetchedLists) {
-          const tasks = await getListTasks(list.id);
-
-          taskStore[list.id] = tasks;
-        }
-
-        setTasksMap(taskStore);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    loadData();
-  }, [workspaceId]);
+  if (listsLoading) {
+    return <div className="p-8">Loading workspace...</div>;
+  }
 
   return (
     <ProtectedRoute>
-      <div>
-        <h1 className="text-3xl font-bold mb-8">Workspace</h1>
-
-        <div className="flex gap-6 overflow-auto">
-          {lists.map((list) => (
-            <ListColumn
-              key={list.id}
-              title={list.name}
-              tasks={tasksMap[list.id] || []}
-            />
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Workspace Board</h1>
+          <CreateListForm workspaceId={workspaceId} />
+        </div>
+        <div className="flex gap-4 overflow-x-auto pb-4">
+          {lists?.map((list) => (
+            <ListColumn key={list.id} list={list} workspaceId={workspaceId} />
           ))}
         </div>
       </div>

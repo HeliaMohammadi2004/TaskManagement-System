@@ -1,50 +1,28 @@
-import { api } from "./api";
-import { Workspace } from "@/types/api";
+import api from "./api";
 
-export interface WorkspacePayload {
+export type Workspace = {
+  id: number;
   name: string;
   description?: string;
-}
+  created_at?: string;
+};
 
-export const getWorkspaces =
-  async (): Promise<Workspace[]> => {
-    const res = await api.get(
-      "/workspaces/"
-    );
+export const getWorkspaces = async (): Promise<Workspace[]> => {
+  const res = await api.get("/workspaces/");
+  return res.data;
+};
 
-    return res.data;
-  };
+export const createWorkspace = async (payload: { name: string; description?: string }) => {
+  const res = await api.post("/workspaces/", payload);
+  return res.data;
+};
 
-export const createWorkspace =
-  async (
-    data: WorkspacePayload
-  ): Promise<Workspace> => {
-    const res = await api.post(
-      "/workspaces/",
-      data
-    );
+export const updateWorkspace = async (id: number, payload: Partial<Workspace>) => {
+  const res = await api.patch(`/workspaces/${id}/`, payload);
+  return res.data;
+};
 
-    return res.data;
-  };
-
-export const updateWorkspace =
-  async (
-    id: number,
-    data: Partial<WorkspacePayload>
-  ): Promise<Workspace> => {
-    const res = await api.patch(
-      `/workspaces/${id}/`,
-      data
-    );
-
-    return res.data;
-  };
-
-export const deleteWorkspace =
-  async (
-    id: number
-  ): Promise<void> => {
-    await api.delete(
-      `/workspaces/${id}/`
-    );
-  };
+export const deleteWorkspace = async (id: number) => {
+  await api.delete(`/workspaces/${id}/`);
+  return id;
+};
