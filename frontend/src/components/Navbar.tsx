@@ -1,22 +1,26 @@
 "use client";
 
 import Link from "next/link";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar() {
   return (
-    <nav className="border-b p-4 flex justify-between">
-      <h1 className="font-bold">
+    <nav className="border-b p-4 flex justify-between items-center">
+      <Link
+        href="/dashboard"
+        className="font-bold"
+      >
         ClickUp Clone
-      </h1>
+      </Link>
 
-      <div className="flex gap-4">
+      <div className="flex gap-3">
+
         <Link href="/dashboard">
           Dashboard
         </Link>
 
-        <Link href="/login">
-          Login
-        </Link>
+        <ThemeToggle />
+
       </div>
     </nav>
   );

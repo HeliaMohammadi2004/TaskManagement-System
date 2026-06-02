@@ -2,10 +2,16 @@
 
 html,
 body {
-  width: 100%;
   min-height: 100vh;
 }
 
 body {
-  background: #f7f7f7;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.dark body {
+  background: #0f172a;
+  color: white;
 }

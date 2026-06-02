@@ -1,5 +1,7 @@
 import "./globals.css";
+
 import Navbar from "@/components/Navbar";
+import AppProvider from "@/providers/AppProvider";
 
 export default function RootLayout({
   children,
@@ -7,13 +9,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      suppressHydrationWarning
+    >
       <body>
-        <Navbar />
 
-        <main className="p-6">
-          {children}
-        </main>
+        <AppProvider>
+
+          <Navbar />
+
+          <main className="p-6">
+            {children}
+          </main>
+
+        </AppProvider>
+
       </body>
     </html>
   );
