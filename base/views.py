@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from rest_framework import permissions, viewsets, generics, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.utils import timezone
+
 
 from .models import Workspace, List, Task
 from .serializers import (
@@ -80,5 +82,30 @@ class TaskViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        return Task.objects.filter(
+            list__workspace__owner=self.request.user
+        ).order_by("order", "-created_at")
 
-        return Task.objects.filter(list__workspace__owner=self.request.user).order_by("order", "-created_at")
+    @action(detail=True, methods=['post'])
+    def start_timer(self, request, pk=None):
+        task = self.get_object()
+        task.started_at = timezone.now()
+        task.finished_at = None
+        task.duration = None
+        task.save()
+
+        return Response({"message": "Timer started"})
+
+    @action(detail=True, methods=['post'])
+    def stop_timer(self, request, pk=None):
+        task = self.get_object()
+
+        if task.started_at:
+            task.finished_at = timezone.now()
+            task.duration = task.finished_at - task.started_at
+            task.save()
+
+        return Response({
+            "message": "Timer stopped",
+            "duration": task.duration
+        })

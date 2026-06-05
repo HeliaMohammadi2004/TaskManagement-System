@@ -42,8 +42,13 @@ class Task(models.Model):
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='MEDIUM')
     assignee = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     due_date = models.DateTimeField(null=True, blank=True)
-    start_date = models.DateTimeField(null=True, blank=True) # اضافه شده برای تطبیق با فرانت
-    order = models.PositiveIntegerField(default=0) # برای جابجایی تسک‌ها در Board
+    start_date = models.DateTimeField(null=True, blank=True)
+
+    started_at = models.DateTimeField(null=True, blank=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+    duration = models.DurationField(null=True, blank=True)
+
+    order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
