@@ -25,11 +25,14 @@ export interface Task {
   list: number;
   title: string;
   description?: string;
-  status: "TODO" | "IN PROGRESS" | "DONE";   // اصلاح شد: به جای IN_PROGRESS
+  status: "TODO" | "IN PROGRESS" | "DONE";
   priority: "LOW" | "MEDIUM" | "HIGH";
   due_date?: string;
   start_date?: string;
+  assignee?: number | null;
   order: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface TaskPayload {

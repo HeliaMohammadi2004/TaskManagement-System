@@ -30,7 +30,8 @@ export default function ListColumn({ list, workspaceId }: Props) {
   if (isLoading) return <div className="w-[320px] bg-gray-100 rounded p-3">Loading tasks...</div>;
 
   return (
-    <div className="w-[320px] min-w-[320px] bg-gray-100 rounded-lg p-3 shadow">
+    <div className="w-full sm:w-[320px] sm:min-w-[320px] bg-white dark:bg-zinc-900
+ rounded-lg p-3 shadow">
       <div className="flex justify-between items-center mb-3">
         <h3 className="font-bold text-lg">{list.name}</h3>
         <button onClick={handleDeleteList} className="text-red-500 text-sm hover:text-red-700">
@@ -39,7 +40,20 @@ export default function ListColumn({ list, workspaceId }: Props) {
       </div>
       <div className="space-y-2 max-h-[500px] overflow-y-auto">
         {tasks?.map((task) => (
-          <TaskCard key={task.id} task={task} onDelete={refresh} />
+          <TaskCard
+            key={task.id}
+            task={task}
+            onDelete={async (id: number) => {
+              if (remove && typeof remove.mutateAsync === "function") {
+                await remove.mutateAsync(id);
+              }
+            }}
+            onUpdate={async (id, data) => {
+              if (update && typeof update.mutateAsync === "function") {
+                await update.mutateAsync({ id, payload: data });
+              }
+            }}
+          />
         ))}
         {tasks?.length === 0 && <p className="text-gray-500 text-sm">No tasks yet</p>}
       </div>
@@ -53,9 +67,14 @@ export default function ListColumn({ list, workspaceId }: Props) {
       ) : (
         <div className="mt-3">
           <CreateTaskForm
-            listId={list.id}
-            onCreated={() => setShowTaskForm(false)}
-            onCancel={() => setShowTaskForm(false)}
+            // CreateTaskForm expects an onSubmit that receives TaskFormData
+            onSubmit={async (data) => {
+              if (create && typeof create.mutateAsync === "function") {
+                await create.mutateAsync(data);
+              }
+              setShowTaskForm(false);
+            }}
+            submitText="Add Task"
           />
         </div>
       )}
