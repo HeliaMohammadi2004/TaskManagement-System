@@ -1,0 +1,169 @@
+/* Small, focused overrides so FullCalendar integrates cleanly with your layout.
+   Adjust CSS variables (--accent, --card, --muted, etc.) in your global theme. */
+
+.task-calendar-widget {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: var(--card);
+  border-radius: 0.75rem;
+  padding: 12px;
+  box-shadow: 0 1px 0 rgba(2,6,23,0.04);
+}
+
+/* make calendar use full width of its container and allow wider cells */
+.task-calendar-widget .fc {
+  width: 100%;
+  max-width: 520px; /* increased from 340/420 → more space for wider day cells */
+  margin: 0 auto;
+  background: transparent;
+}
+
+/* ensure day columns can expand and not force large gaps */
+.fc .fc-daygrid-day {
+  padding: 8px 6px;
+  min-width: 72px; /* raised so each day cell is wider */
+  box-sizing: border-box;
+}
+
+/* increase day cell frame so wrapped titles have room */
+.fc .fc-daygrid-day-frame {
+  min-height: 96px;
+  padding: 6px;
+}
+
+/* toolbar */
+.fc .fc-toolbar {
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+}
+.fc .fc-toolbar-chunk {
+  gap: 8px;
+}
+.fc .fc-toolbar-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--theme, #082032);
+}
+.fc .fc-button {
+  border-radius: 8px;
+  border: 1px solid rgba(2,6,23,0.06);
+  background: #fff;
+  color: #0f172a;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+.fc .fc-button:hover, .fc .fc-button:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(2,6,23,0.06);
+}
+
+/* event card layout (compact) */
+.fc .fc-event {
+  padding: 6px 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  box-shadow: 0 1px 2px rgba(2,6,23,0.04);
+  font-size: 13px;
+  line-height: 1.1;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.fc .fc-event:hover, .fc .fc-event:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(2,6,23,0.08);
+}
+
+/* custom event inner structure */
+.fc-custom-event {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  min-width: 0;
+}
+.fc-event-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  margin-top: 4px;
+  flex: 0 0 auto;
+  box-shadow: 0 1px 3px rgba(2,6,23,0.08);
+}
+.fc-event-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.fc-event-title {
+  font-weight: 600;
+  color: #071133;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fc-event-sub {
+  color: #475569;
+  font-size: 11px;
+  margin-top: 2px;
+  opacity: 0.9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* days that have tasks get a subtle background */
+.fc .has-task {
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(2,6,23,0.005), rgba(2,6,23,0.01));
+}
+
+/* today's ring */
+.fc .fc-daygrid-day.fc-day-today {
+  box-shadow: inset 0 1px 0 rgba(2,6,23,0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(2,6,23,0.04);
+}
+
+/* compact header row */
+.fc .fc-col-header-cell {
+  font-weight: 600;
+  color: #475569;
+  padding: 6px 4px;
+  font-size: 12px;
+}
+
+/* make calendar fit nicely in a narrow right column */
+@media (min-width: 768px) {
+  .task-calendar-widget .fc {
+    max-width: 340px;
+  }
+}
+
+/* mobile tuning */
+@media (max-width: 767px) {
+  .task-calendar-widget .fc .fc-col-header-cell {
+    font-size: 11px;
+  }
+  .task-calendar-widget .fc .fc-daygrid-day-frame {
+    padding: 4px;
+  }
+}
+
+/* responsive: allow calendar to use more width on larger screens */
+@media (min-width: 1200px) {
+  .task-calendar-widget .fc { max-width: 600px; } /* extra wide on very large screens */
+}
+
+/* small scrollbar for overflowed event lists */
+.task-calendar-widget ::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.task-calendar-widget ::-webkit-scrollbar-thumb {
+  background: rgba(2,6,23,0.08);
+  border-radius: 6px;
+}
+.task-calendar-widget ::-webkit-scrollbar-track {
+  background: transparent;
+}

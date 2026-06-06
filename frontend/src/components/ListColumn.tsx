@@ -101,7 +101,9 @@ export default function ListColumn({ list, workspaceId }: Props) {
               <path d="M3 7h18M7 7v13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7" />
               <path d="M10 3h4" />
             </svg>
-            <p className="text-sm text-slate-500">No tasks yet. Add your first task to get started.</p>
+            <p className="text-sm text-slate-500">No tasks yet.
+              <br />
+              Add your first task to get started.</p>
           </div>
         ) : (
           tasks.map((task) => (

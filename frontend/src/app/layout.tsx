@@ -2,6 +2,8 @@ import "./globals.css";
 
 import Navbar from "@/components/Navbar";
 import AppProvider from "@/providers/AppProvider";
+import "../styles/calendar.css";
+
 
 export default function RootLayout({
   children,

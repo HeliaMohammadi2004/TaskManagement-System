@@ -101,7 +101,7 @@ const priorityStyles = {
 };
 
 const statusStyles = {
-  TODO: "bg-gray-100 text-gray-800 ring-1 ring-gray-50",
+  TODO: "bg-gray-200 text-gray-800 ring-1 ring-gray-50",
   "IN PROGRESS": "bg-sky-100 text-sky-800 ring-1 ring-sky-50",
   DONE: "bg-green-100 text-green-900 ring-1 ring-green-50",
 };
