@@ -101,7 +101,6 @@ export default function CreateTaskForm({
      rounded-lg
      border
      p-4
-     bg-white
      dark:bg-zinc-900
      border-zinc-200
      dark:border-zinc-800
@@ -109,7 +108,7 @@ export default function CreateTaskForm({
    `}
     >
       <div>
-        <label className="block text-sm font-medium text-theme">Title</label>
+        <label className="block text-sm font-medium text-white">Title</label>
         <input
           value={values.title}
           onChange={(e) => handleChange("title", e.target.value)}
@@ -120,7 +119,7 @@ export default function CreateTaskForm({
         p-2
         rounded
         bg-[color:var(--card-bg)]
-        text-theme
+        text-zinc-200
         border-theme
       "
           placeholder="Task title"
@@ -130,7 +129,7 @@ export default function CreateTaskForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-theme">Description</label>
+        <label className="block text-sm font-medium text-white">Description</label>
         <textarea
           value={values.description}
           onChange={(e) => handleChange("description", e.target.value)}
@@ -141,7 +140,7 @@ export default function CreateTaskForm({
         p-2
         rounded
         bg-[color:var(--card-bg)]
-        text-theme
+        text-zinc-200
         border-theme
       "
           placeholder="Optional description"
@@ -152,7 +151,7 @@ export default function CreateTaskForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-theme">Status</label>
+          <label className="block text-sm font-medium text-white">Status</label>
           <select
             value={values.status}
             onChange={(e) => handleChange("status", e.target.value as TaskStatus)}
@@ -163,7 +162,7 @@ export default function CreateTaskForm({
           p-2
           rounded
           bg-[color:var(--card-bg)]
-          text-theme
+          text-zinc-200
           border-theme
         "
             disabled={isLoading}
@@ -175,7 +174,7 @@ export default function CreateTaskForm({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-theme">Priority</label>
+          <label className="block text-sm font-medium text-white">Priority</label>
           <select
             value={values.priority}
             onChange={(e) => handleChange("priority", e.target.value as TaskPriority)}
@@ -186,7 +185,7 @@ export default function CreateTaskForm({
           p-2
           rounded
           bg-[color:var(--card-bg)]
-          text-theme
+          text-zinc-200
           border-theme
         "
             disabled={isLoading}
@@ -200,7 +199,7 @@ export default function CreateTaskForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-theme">Start date</label>
+          <label className="block text-sm font-medium text-white">Start date</label>
           <input
             type="date"
             value={values.start_date}
@@ -212,7 +211,7 @@ export default function CreateTaskForm({
           p-2
           rounded
           bg-[color:var(--card-bg)]
-          text-theme
+          text-zinc-200
           border-theme
         "
             disabled={isLoading}
@@ -220,7 +219,7 @@ export default function CreateTaskForm({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-theme">Due date</label>
+          <label className="block text-sm font-medium text-white">Due date</label>
           <input
             type="date"
             value={values.due_date}
@@ -232,7 +231,7 @@ export default function CreateTaskForm({
           p-2
           rounded
           bg-[color:var(--card-bg)]
-          text-theme
+          text-zinc-200
           border-theme
         "
             disabled={isLoading}

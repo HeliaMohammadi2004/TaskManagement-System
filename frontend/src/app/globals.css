@@ -18,31 +18,24 @@
 
   --brand:         #2563eb;
   --brand-hover:   #1d4ed8;
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --text: #0f1724;       /* slate-900 */
+  --muted: #6b7280;      /* gray-500 */
+  --border: #e6e6e6;     /* gray-200 */
+  --accent: #0ea5e9;     /* sky-500 */
+  --card: #ffffff;
+  --success: #10b981;
+  --danger: #ef4444;
 
   color-scheme: light;
 }
 
-/* ─────────────────────────────────────────────
-   Dark mode overrides  (.dark on <html>)
-───────────────────────────────────────────── */
-.dark {
-  --bg-page:       #0f172a;
-  --bg-surface:    #1e293b;
-  --bg-subtle:     #1e293b;
-  --bg-muted:      #334155;
-
-  --border:        #334155;
-  --border-strong: #475569;
-
-  --text-primary:  #f1f5f9;
-  --text-secondary:#94a3b8;
-  --text-muted:    #64748b;
-
-  --brand:         #3b82f6;
-  --brand-hover:   #2563eb;
-
-  color-scheme: dark;
-}
+.bg-theme { background-color: var(--bg); }
+.surface { background-color: var(--surface); }
+.text-theme { color: var(--text); }
+.muted { color: var(--muted); }
+.border-theme { border-color: var(--border); }
 
 /* ─────────────────────────────────────────────
    Base
@@ -69,17 +62,6 @@ body {
 ::-webkit-scrollbar-track  { background: transparent; }
 ::-webkit-scrollbar-thumb  { background: var(--border-strong); border-radius: 9999px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-
-/* ─────────────────────────────────────────────
-   Form inputs — date picker fix for dark mode
-   Browsers inject system UI chrome for <input type="date">;
-   the color-scheme property tells them to use the dark variant.
-───────────────────────────────────────────── */
-.dark input[type="date"],
-.dark input[type="datetime-local"],
-.dark input[type="time"] {
-  color-scheme: dark;
-}
 
 /* ─────────────────────────────────────────────
    Focus ring — consistent brand colour

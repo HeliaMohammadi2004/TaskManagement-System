@@ -148,11 +148,11 @@ export default function TaskCard({
 
   return (
     <>
-      <div className="group rounded-2xl border border-zinc-200 dark:border-zinc-700/60 bg-white dark:bg-zinc-900 p-4 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
+      <div className="group rounded-2xl border border-zinc-200 dark:border-zinc-700/60 bg-zinc-800 p-4 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
         {/* Header */}
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 leading-snug">
+            <h3 className="text-base font-semibold text-zinc-100 leading-snug">
               {task.title}
             </h3>
             {task.description && (
@@ -165,7 +165,7 @@ export default function TaskCard({
             <button
               onClick={() => setIsEditing(true)}
               title="Edit task"
-              className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-blue-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-blue-400"
+              className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-blue-600 dark:hover:bg-zinc-800 dark:hover:text-blue-400"
             >
               <Pencil size={16} />
             </button>
@@ -173,7 +173,7 @@ export default function TaskCard({
               disabled={isDeleting}
               onClick={handleDelete}
               title="Delete task"
-              className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-zinc-500 dark:hover:bg-red-950/50 dark:hover:text-red-400 disabled:opacity-40"
+              className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/50 dark:hover:text-red-400 disabled:opacity-40"
             >
               <Trash2 size={16} />
             </button>
@@ -193,14 +193,14 @@ export default function TaskCard({
         </div>
 
         {/* Dates */}
-        <div className="space-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+        <div className="space-y-1 text-xs text-zinc-400">
           <div className="flex items-center gap-1.5">
             <Calendar size={13} className="shrink-0" />
-            <span>Start: <span className="text-zinc-700 dark:text-zinc-300">{formatDate(task.start_date)}</span></span>
+            <span>Start: <span className="text-zinc-300">{formatDate(task.start_date)}</span></span>
           </div>
           <div className="flex items-center gap-1.5">
             <Clock3 size={13} className="shrink-0" />
-            <span>Due: <span className="text-zinc-700 dark:text-zinc-300">{formatDate(task.due_date)}</span></span>
+            <span>Due: <span className="text-zinc-300">{formatDate(task.due_date)}</span></span>
           </div>
         </div>
 
@@ -236,7 +236,7 @@ export default function TaskCard({
             />
             <button
               onClick={() => setIsEditing(false)}
-              className="mt-3 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 py-3 text-sm font-medium text-zinc-600 dark:text-zinc-300 transition hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className="mt-3 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 py-3 text-sm font-medium text-zinc-300 transition hover:bg-zinc-100 dark:hover:bg-zinc-800"
             >
               Cancel
             </button>

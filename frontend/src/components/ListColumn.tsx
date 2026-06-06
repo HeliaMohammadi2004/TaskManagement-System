@@ -112,7 +112,7 @@ export default function ListColumn({ list, workspaceId }: Props) {
           />
         ))}
         {tasks?.length === 0 && (
-          <p className="text-center text-xs text-zinc-400 dark:text-zinc-500 py-6 italic">
+          <p className="text-center text-xs text-white py-6 italic">
             No tasks yet
           </p>
         )}
@@ -142,7 +142,7 @@ export default function ListColumn({ list, workspaceId }: Props) {
           />
           <button
             onClick={() => setShowTaskForm(false)}
-            className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-zinc-700 py-2 text-sm text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+            className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-zinc-700 py-2 text-sm text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
           >
             Cancel
           </button>

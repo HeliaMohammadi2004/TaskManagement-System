@@ -15,14 +15,14 @@ export default function WorkspaceCard({ workspace, onDelete }: Props) {
 
   return (
     <>
-      <div className="group rounded-xl border border-zinc-200 dark:border-zinc-700/60 bg-white dark:bg-zinc-900 p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+      <div className="group rounded-xl border border-zinc-200 dark:border-zinc-700/60 bg-zinc-800 p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
         <Link href={`/workspace/${workspace.id}`}>
-          <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 text-base mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          <h3 className="font-semibold text-white text-base mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
             {workspace.name}
           </h3>
         </Link>
         {workspace.description && (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4 line-clamp-2">
+          <p className="text-sm text-zinc-300 mb-4 line-clamp-2">
             {workspace.description}
           </p>
         )}
