@@ -1,41 +1,28 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-
-interface TimerIconProps {
-  size?: number;
-  className?: string;
-}
-
-const PlayIcon = ({ size = 16, className = "" }: TimerIconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden={true}>
-    <path d="M5 3l14 9-14 9V3z" fill="currentColor" />
-  </svg>
-);
-
-const StopIcon = ({ size = 16, className = "" }: TimerIconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden={true}>
-    <rect x="4" y="4" width="16" height="16" rx="2" fill="currentColor" />
-  </svg>
-);
-
-const ClockIcon = ({ size = 14, className = "" }: TimerIconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden={true}>
-    <circle cx="12" cy="12" r="9" />
-    <path d="M12 7v5l3 2" />
-  </svg>
-);
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface TaskTimerProps {
   taskId: number;
   startedAt?: string | null;
   finishedAt?: string | null;
-  duration?: string | null;
+  duration?: string | null; // "HH:MM:SS" or "MM:SS"
   onStart: (id: number) => Promise<void>;
   onStop: (id: number) => Promise<void>;
   isStarting?: boolean;
   isStopping?: boolean;
 }
+
+const PlayIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <path d="M5 3l14 9-14 9V3z" fill="currentColor" />
+  </svg>
+);
+const StopIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="currentColor" />
+  </svg>
+);
 
 function parseDurationToSeconds(duration: string): number {
   const parts = duration.split(":").map(Number);
@@ -43,7 +30,6 @@ function parseDurationToSeconds(duration: string): number {
   if (parts.length === 2) return parts[0] * 60 + parts[1];
   return 0;
 }
-
 function formatSeconds(totalSeconds: number): string {
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
@@ -62,7 +48,6 @@ export default function TaskTimer({
   isStarting = false,
   isStopping = false,
 }: TaskTimerProps) {
-  // running when there's a start time and no finish time
   const isRunning = !!startedAt && !finishedAt;
 
   const getLiveSeconds = useCallback(() => {
@@ -101,13 +86,20 @@ export default function TaskTimer({
     };
   }, [isRunning, getLiveSeconds]);
 
+  const displayDuration = duration ? parseDurationToSeconds(duration) : null;
+  const elapsed = liveSeconds ?? displayDuration ?? 0;
+  const total = displayDuration ?? Math.max(elapsed, 1);
+  const pct = Math.min(100, Math.round((elapsed / total) * 100));
+
+  const isBusy = isStarting || isStopping;
+
   const handleStart = async () => {
     setActionError(null);
     try {
       await onStart(taskId);
     } catch (err) {
-      console.error("Timer start error:", err);
       setActionError("Failed to start timer");
+      console.error(err);
     }
   };
 
@@ -116,92 +108,83 @@ export default function TaskTimer({
     try {
       await onStop(taskId);
     } catch (err) {
-      console.error("Timer stop error:", err);
       setActionError("Failed to stop timer");
+      console.error(err);
     }
   };
 
-  const displayDuration = duration ? parseDurationToSeconds(duration) : null;
-  const isBusy = isStarting || isStopping;
+  const liveLabel = useMemo(() => {
+    if (isRunning && liveSeconds !== null) return formatSeconds(liveSeconds);
+    if (displayDuration !== null) return formatSeconds(displayDuration);
+    return "not started";
+  }, [isRunning, liveSeconds, displayDuration]);
 
   return (
-    <div className="mt-3 pt-3 border-t border-gray-200">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 text-sm min-w-0">
-          <ClockIcon
-            size={14}
-            className={isRunning ? "text-emerald-500 shrink-0" : "text-gray-400 shrink-0"}
-          />
-          <span className="text-gray-600 shrink-0 text-xs font-medium">Time:</span>
-
-          {isRunning && liveSeconds !== null ? (
-            <span className="font-mono font-semibold text-emerald-600 tabular-nums">
-              {formatSeconds(liveSeconds)}
+    <div className="mt-3 pt-3 border-t border-gray-100">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-baseline gap-3">
+            <span className={`inline-flex items-center justify-center h-8 w-8 rounded-lg ${isRunning ? "bg-emerald-50 text-emerald-600" : "bg-gray-100 text-gray-600"}`}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.25" />
+                <path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </span>
-          ) : displayDuration !== null ? (
-            <span className="font-mono text-gray-700 tabular-nums">{formatSeconds(displayDuration)}</span>
-          ) : (
-            <span className="text-gray-400 italic text-xs">not started</span>
-          )}
 
-          {isRunning && (
-            <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 animate-pulse shrink-0">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              LIVE
-            </span>
-          )}
+            <div className="min-w-0">
+              <div className="text-xs font-medium text-gray-600">Time</div>
+              <div
+                className="text-sm font-mono font-semibold tabular-nums text-slate-900"
+                aria-live="polite"
+              >
+                {liveLabel}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {isRunning ? (
-          <button
-            onClick={handleStop}
-            disabled={isBusy}
-            title="Stop timer"
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium
-              bg-red-100 text-red-700 hover:bg-red-200
-              dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50
-              transition disabled:opacity-50 shrink-0"
-          >
-            {isStopping ? (
-              <span className="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <StopIcon size={12} />
-            )}
-            {isStopping ? "…" : "Stop"}
-          </button>
-        ) : (
-          <button
-            onClick={handleStart}
-            disabled={isBusy}
-            title="Start timer"
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium
-              bg-emerald-100 text-emerald-700 hover:bg-emerald-200
-              dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50
-              transition disabled:opacity-50 shrink-0"
-          >
-            {isStarting ? (
-              <span className="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <PlayIcon size={12} />
-            )}
-            {isStarting ? "…" : displayDuration !== null ? "Restart" : "Start"}
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {isRunning ? (
+            <button
+              onClick={handleStop}
+              disabled={isBusy}
+              title="Stop timer"
+              className="inline-flex items-center gap-2 rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 active:scale-95 transition transform"
+              aria-pressed="true"
+            >
+              {isStopping ? <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <StopIcon />}
+              <span className="sr-only">Stop timer</span>
+              <span>Stop</span>
+            </button>
+          ) : (
+            <button
+              onClick={handleStart}
+              disabled={isBusy}
+              title="Start timer"
+              className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 active:scale-95 transition transform"
+              aria-pressed="false"
+            >
+              {isStarting ? <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <PlayIcon />}
+              <span className="sr-only">Start timer</span>
+              <span>{displayDuration !== null ? "Restart" : "Start"}</span>
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* خطا */}
-      {actionError && (
-        <p className="mt-1.5 text-[11px] text-red-500 dark:text-red-400">{actionError}</p>
-      )}
+      {actionError && <p className="mt-2 text-sm text-red-600">{actionError}</p>}
 
-      {/* session info */}
       {(startedAt || finishedAt) && (
-        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-zinc-400 dark:text-zinc-500">
+        <div className="mt-3 text-xs text-gray-500 flex flex-wrap gap-4">
           {startedAt && (
-            <span>Started: <span className="text-zinc-500 dark:text-zinc-400">{new Date(startedAt).toLocaleString()}</span></span>
+            <span>
+              Started: <span className="text-gray-700 font-medium">{new Date(startedAt).toLocaleString()}</span>
+            </span>
           )}
           {finishedAt && (
-            <span>Ended: <span className="text-zinc-500 dark:text-zinc-400">{new Date(finishedAt).toLocaleString()}</span></span>
+            <span>
+              Ended: <span className="text-gray-700 font-medium">{new Date(finishedAt).toLocaleString()}</span>
+            </span>
           )}
         </div>
       )}

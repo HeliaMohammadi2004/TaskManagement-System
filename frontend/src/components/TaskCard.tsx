@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import TaskTimer from "./TaskTimer";
+import CreateTaskForm, { TaskFormData } from "./CreateTaskForm";
 
 type IconProps = React.SVGProps<SVGSVGElement> & { size?: number };
 
@@ -65,8 +66,6 @@ const CheckCircle2 = (props: IconProps) => (
   </IconBase>
 );
 
-import CreateTaskForm, { TaskFormData } from "./CreateTaskForm";
-
 export interface Task {
   id: number;
   list: number;
@@ -87,23 +86,24 @@ export interface Task {
 interface TaskCardProps {
   task: Task;
   onDelete: (id: number) => Promise<void>;
-  onUpdate: (id: number, data: Partial<Task>) => Promise<void>;
+  onUpdate: (id: number, data: Partial<TaskFormData>) => Promise<void>;
   onTimerStart?: (id: number) => Promise<void>;
   onTimerStop?: (id: number) => Promise<void>;
   isTimerStarting?: boolean;
   isTimerStopping?: boolean;
 }
 
+/* stronger, more contrasting badge styles */
 const priorityStyles = {
-  LOW: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
-  MEDIUM: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
-  HIGH: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300",
+  LOW: "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-50",
+  MEDIUM: "bg-amber-100 text-amber-900 ring-1 ring-amber-50",
+  HIGH: "bg-red-100 text-red-900 ring-1 ring-red-50",
 };
 
 const statusStyles = {
-  TODO: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
-  "IN PROGRESS": "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
-  DONE: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300",
+  TODO: "bg-gray-100 text-gray-800 ring-1 ring-gray-50",
+  "IN PROGRESS": "bg-sky-100 text-sky-800 ring-1 ring-sky-50",
+  DONE: "bg-green-100 text-green-900 ring-1 ring-green-50",
 };
 
 export default function TaskCard({
@@ -146,81 +146,96 @@ export default function TaskCard({
     if (onTimerStop) await onTimerStop(id);
   };
 
+  /* pick a small left accent color based on priority for visual cue */
+  const accentForPriority = {
+    LOW: "bg-emerald-400",
+    MEDIUM: "bg-amber-400",
+    HIGH: "bg-red-400",
+  } as const;
+
   return (
     <>
-      <div className="group rounded-2xl border border-zinc-200 dark:border-zinc-700/60 bg-zinc-800 p-4 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
-        {/* Header */}
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-base font-semibold text-zinc-100 leading-snug">
-              {task.title}
-            </h3>
-            {task.description && (
-              <p className="mt-1.5 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400 line-clamp-2">
-                {task.description}
-              </p>
-            )}
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            <button
-              onClick={() => setIsEditing(true)}
-              title="Edit task"
-              className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-blue-600 dark:hover:bg-zinc-800 dark:hover:text-blue-400"
-            >
-              <Pencil size={16} />
-            </button>
-            <button
-              disabled={isDeleting}
-              onClick={handleDelete}
-              title="Delete task"
-              className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/50 dark:hover:text-red-400 disabled:opacity-40"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-        </div>
+      <div className="group flex rounded-xl border border-gray-200 bg-linear-to-b from-white to-gray-50 shadow-sm transition-transform hover:shadow-lg hover:-translate-y-0.5 overflow-hidden">
+        <div className={`w-1 ${accentForPriority[task.priority]} transition-colors`} />
+        <div className="flex-1 p-4">
+          {/* Header */}
+          <div className="mb-3 flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base font-semibold text-slate-900 leading-tight truncate">
+                {task.title}
+              </h3>
+              {task.description && (
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-600 line-clamp-2">
+                  {task.description}
+                </p>
+              )}
+            </div>
 
-        {/* Badges */}
-        <div className="mb-3 flex flex-wrap gap-2">
-          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${priorityStyles[task.priority]}`}>
-            <Flag size={11} />
-            {task.priority}
-          </span>
-          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[task.status]}`}>
-            <CheckCircle2 size={11} />
-            {task.status}
-          </span>
-        </div>
-
-        {/* Dates */}
-        <div className="space-y-1 text-xs text-zinc-400">
-          <div className="flex items-center gap-1.5">
-            <Calendar size={13} className="shrink-0" />
-            <span>Start: <span className="text-zinc-300">{formatDate(task.start_date)}</span></span>
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                onClick={() => setIsEditing(true)}
+                title="Edit task"
+                className="rounded-md p-1.5 text-slate-500 hover:bg-sky-50 hover:text-sky-600 transition"
+                aria-label="Edit task"
+              >
+                <Pencil size={16} />
+              </button>
+              <button
+                disabled={isDeleting}
+                onClick={handleDelete}
+                title="Delete task"
+                className="rounded-md p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 transition disabled:opacity-40"
+                aria-label="Delete task"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Clock3 size={13} className="shrink-0" />
-            <span>Due: <span className="text-zinc-300">{formatDate(task.due_date)}</span></span>
-          </div>
-        </div>
 
-        {/* Timer Section */}
-        <TaskTimer
-          taskId={task.id}
-          startedAt={task.started_at}
-          finishedAt={task.finished_at}
-          duration={task.duration}
-          onStart={handleTimerStart}
-          onStop={handleTimerStop}
-          isStarting={isTimerStarting}
-          isStopping={isTimerStopping}
-        />
+          {/* Badges */}
+          <div className="mb-3 flex flex-wrap gap-2">
+            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${priorityStyles[task.priority]}`}>
+              <Flag size={11} />
+              {task.priority}
+            </span>
+            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[task.status]}`}>
+              <CheckCircle2 size={11} />
+              {task.status}
+            </span>
+          </div>
+
+          {/* Dates */}
+          <div className="space-y-1 text-xs text-slate-500 mb-3">
+            <div className="flex items-center gap-1.5">
+              <Calendar size={13} className="shrink-0 text-slate-400" />
+              <span className="truncate">Start: <span className="text-slate-700 font-medium">{formatDate(task.start_date)}</span></span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Clock3 size={13} className="shrink-0 text-slate-400" />
+              <span className="truncate">Due: <span className="text-slate-700 font-medium">{formatDate(task.due_date)}</span></span>
+            </div>
+          </div>
+
+          {/* Timer Section */}
+          <TaskTimer
+            taskId={task.id}
+            startedAt={task.started_at}
+            finishedAt={task.finished_at}
+            duration={task.duration}
+            onStart={handleTimerStart}
+            onStop={handleTimerStop}
+            isStarting={isTimerStarting}
+            isStopping={isTimerStopping}
+          />
+        </div>
       </div>
 
       {/* Edit modal */}
       {isEditing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" />
+
+          <div className="relative z-10 max-h-[90vh] w-full max-w-2xl overflow-y-auto mx-4">
             <CreateTaskForm
               submitText="Update Task"
               initialValues={{
@@ -230,13 +245,15 @@ export default function TaskCard({
                 priority: task.priority,
                 start_date: task.start_date ?? "",
                 due_date: task.due_date ?? "",
-                order: task.order,
               }}
               onSubmit={handleUpdate}
+              onCancel={() => setIsEditing(false)}
+              className="rounded-lg"
             />
+
             <button
               onClick={() => setIsEditing(false)}
-              className="mt-3 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 py-3 text-sm font-medium text-zinc-300 transition hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className="mt-3 w-full rounded-md border border-gray-200 py-3 text-sm font-medium text-slate-700 hover:bg-gray-50 transition"
             >
               Cancel
             </button>

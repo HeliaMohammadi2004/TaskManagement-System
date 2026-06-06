@@ -15,15 +15,14 @@ interface Props {
 export default function ListColumn({ list, workspaceId }: Props) {
   const { remove: deleteList } = useLists(workspaceId);
 
-  // avoid destructuring potential optional properties (timerStart/timerStop)
+  // useTasks may expose optional timer mutations — access defensively
   const tasksHook = useTasks(list.id);
-  const tasks = tasksHook.data;
-  const isLoading = tasksHook.isLoading;
+  const tasks = tasksHook.data ?? [];
+  const isLoading = !!tasksHook.isLoading;
   const create = tasksHook.create;
   const remove = tasksHook.remove;
   const update = tasksHook.update;
 
-  // access timer mutations defensively with proper types when hook may not export them
   interface TimerMutate {
     mutateAsync: (id: number) => Promise<unknown>;
     isPending?: boolean;
@@ -40,18 +39,22 @@ export default function ListColumn({ list, workspaceId }: Props) {
   const [showTaskForm, setShowTaskForm] = useState(false);
 
   const handleDeleteList = async () => {
-    if (confirm(`Delete list "${list.name}"? All tasks will be deleted.`)) {
+    if (!confirm(`Delete list "${list.name}"? This will remove all tasks in the list.`)) return;
+    try {
       await deleteList.mutateAsync(list.id);
+    } catch (err) {
+      console.error("Failed to delete list:", err);
+      // optionally show toast / inline error
     }
   };
 
   if (isLoading) {
     return (
-      <div className="w-full sm:w-[320px] sm:min-w-[320px] rounded-xl bg-zinc-100 dark:bg-zinc-800/60 p-4 animate-pulse">
-        <div className="h-5 w-2/3 rounded bg-zinc-200 dark:bg-zinc-700 mb-4" />
+      <div className="w-full sm:w-[320px] sm:min-w-[320px] rounded-lg bg-white border border-gray-200 p-4 shadow-sm animate-pulse">
+        <div className="h-4 w-36 rounded bg-gray-200 mb-4" />
         <div className="space-y-3">
           {[1, 2].map((i) => (
-            <div key={i} className="h-24 rounded-xl bg-zinc-200 dark:bg-zinc-700" />
+            <div key={i} className="h-20 rounded-lg bg-gray-100" />
           ))}
         </div>
       </div>
@@ -59,95 +62,112 @@ export default function ListColumn({ list, workspaceId }: Props) {
   }
 
   return (
-    <div className="w-full sm:w-[320px] sm:min-w-[320px] rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700/50 p-3 shadow-sm flex flex-col">
-      {/* Column header */}
-      <div className="flex justify-between items-center mb-3 px-1">
-        <h3 className="font-semibold text-sm text-zinc-800 dark:text-zinc-200">{list.name}</h3>
+    <section className="w-full sm:w-[320px] sm:min-w-[320px] rounded-lg bg-white border border-gray-200 p-4 shadow-sm flex flex-col">
+      {/* header */}
+      <header className="flex items-start justify-between gap-3 mb-3">
+        <div className="min-w-0">
+          <h3 className="text-base font-semibold text-slate-900 truncate">{list.name}</h3>
+          <p className="text-xs text-slate-500 mt-1">{(list as { description?: string }).description ?? ""}</p>
+        </div>
+
         <div className="flex items-center gap-2">
-          {tasks && tasks.length > 0 && (
-            <span className="rounded-full bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 text-[11px] font-medium text-zinc-600 dark:text-zinc-300">
+          {tasks.length > 0 && (
+            <span className="inline-flex items-center justify-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-slate-700">
               {tasks.length}
             </span>
           )}
+
           <button
             onClick={handleDeleteList}
             title="Delete list"
-            className="rounded-lg p-1 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+            className="rounded-md p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 transition"
+            aria-label={`Delete list ${list.name}`}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 6L6 18M6 6l12 12" />
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M3 6h18" />
+              <path d="M8 6v12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" />
+              <path d="M10 11v6M14 11v6" />
+              <path d="M9 6V4h6v2" />
             </svg>
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* Tasks */}
-      <div className="space-y-2 max-h-[calc(100vh-260px)] overflow-y-auto pr-0.5 flex-1">
-        {tasks?.map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            onDelete={async (id: number) => {
-              if (remove && typeof remove.mutateAsync === "function") {
-                await remove.mutateAsync(id);
-              }
-            }}
-            onUpdate={async (id, data) => {
-              if (update && typeof update.mutateAsync === "function") {
-                await update.mutateAsync({ id, payload: data });
-              }
-            }}
-            onTimerStart={async (id: number) => {
-              if (timerStart && typeof timerStart.mutateAsync === "function") {
-                await timerStart.mutateAsync(id);
-              }
-            }}
-            onTimerStop={async (id: number) => {
-              if (timerStop && typeof timerStop.mutateAsync === "function") {
-                await timerStop.mutateAsync(id);
-              }
-            }}
-            isTimerStarting={isTimerStarting}
-            isTimerStopping={isTimerStopping}
-          />
-        ))}
-        {tasks?.length === 0 && (
-          <p className="text-center text-xs text-white py-6 italic">
-            No tasks yet
-          </p>
+      {/* tasks list */}
+      <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-260px)] flex-1 pr-1">
+        {tasks.length === 0 ? (
+          <div className="py-8 text-center">
+            <svg className="mx-auto mb-3 h-8 w-8 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M3 7h18M7 7v13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7" />
+              <path d="M10 3h4" />
+            </svg>
+            <p className="text-sm text-slate-500">No tasks yet. Add your first task to get started.</p>
+          </div>
+        ) : (
+          tasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              onDelete={async (id: number) => {
+                if (remove && typeof remove.mutateAsync === "function") {
+                  await remove.mutateAsync(id);
+                }
+              }}
+              onUpdate={async (id, data) => {
+                if (update && typeof update.mutateAsync === "function") {
+                  await update.mutateAsync({ id, payload: data });
+                }
+              }}
+              onTimerStart={async (id: number) => {
+                if (timerStart && typeof timerStart.mutateAsync === "function") {
+                  await timerStart.mutateAsync(id);
+                }
+              }}
+              onTimerStop={async (id: number) => {
+                if (timerStop && typeof timerStop.mutateAsync === "function") {
+                  await timerStop.mutateAsync(id);
+                }
+              }}
+              isTimerStarting={isTimerStarting}
+              isTimerStopping={isTimerStopping}
+            />
+          ))
         )}
       </div>
 
-      {/* Add task */}
-      {!showTaskForm ? (
-        <button
-          onClick={() => setShowTaskForm(true)}
-          className="mt-3 flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors w-full"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          Add task
-        </button>
-      ) : (
-        <div className="mt-3">
-          <CreateTaskForm
-            onSubmit={async (data) => {
-              if (create && typeof create.mutateAsync === "function") {
-                await create.mutateAsync(data);
-              }
-              setShowTaskForm(false);
-            }}
-            submitText="Add Task"
-          />
+      {/* footer / add task */}
+      <footer className="mt-4">
+        {!showTaskForm ? (
           <button
-            onClick={() => setShowTaskForm(false)}
-            className="mt-2 w-full rounded-xl border border-zinc-200 dark:border-zinc-700 py-2 text-sm text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+            onClick={() => setShowTaskForm(true)}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-md bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-700 transition"
+            aria-label={`Add task to ${list.name}`}
           >
-            Cancel
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Add task
           </button>
-        </div>
-      )}
-    </div>
+        ) : (
+          <div className="space-y-2">
+            <CreateTaskForm
+              onSubmit={async (data) => {
+                if (create && typeof create.mutateAsync === "function") {
+                  await create.mutateAsync(data);
+                }
+                setShowTaskForm(false);
+              }}
+              submitText="Add Task"
+            />
+            <button
+              onClick={() => setShowTaskForm(false)}
+              className="w-full rounded-md border border-gray-200 py-2 text-sm text-slate-700 hover:bg-gray-50 transition"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </footer>
+    </section>
   );
 }

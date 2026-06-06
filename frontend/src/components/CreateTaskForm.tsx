@@ -12,7 +12,6 @@ export interface TaskFormData {
   priority: TaskPriority;
   start_date: string;
   due_date: string;
-  order: number;
 }
 
 interface CreateTaskFormProps {
@@ -31,7 +30,6 @@ const defaultValues: TaskFormData = {
   priority: "MEDIUM",
   start_date: "",
   due_date: "",
-  order: 0,
 };
 
 export default function CreateTaskForm({
@@ -48,22 +46,18 @@ export default function CreateTaskForm({
   });
   const [error, setError] = useState<string | null>(null);
 
+  // Sync initialValues in a stable manner (dependency array size is constant).
   useEffect(() => {
-    // if initialValues change, sync them in
-    if (!initialValues) return;
-
+    const initKey = initialValues ? JSON.stringify(initialValues) : "";
+    if (!initKey) return;
     const init = initialValues as Partial<TaskFormData>;
-
-    // shallow compare to avoid unnecessary updates
-    const initialKeys = Object.keys(init) as Array<keyof TaskFormData>;
-    const hasDiff = initialKeys.some((k) => init[k] !== values[k]);
+    const keys = Object.keys(init) as Array<keyof TaskFormData>;
+    const hasDiff = keys.some((k) => init[k] !== values[k]);
     if (!hasDiff) return;
-
-    // schedule the update after the effect to avoid synchronous setState and cascading renders
-    Promise.resolve().then(() => {
-      setValues((prev) => ({ ...prev, ...init }));
-    });
-  }, [initialValues, values]);
+    // schedule update to avoid synchronous setState inside effect
+    Promise.resolve().then(() => setValues((prev) => ({ ...prev, ...init })));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialValues ? JSON.stringify(initialValues) : ""]);
 
   const handleChange = <K extends keyof TaskFormData>(
     key: K,
@@ -84,195 +78,127 @@ export default function CreateTaskForm({
     try {
       await onSubmit(values);
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError(String(err) || "Failed to submit task");
-      }
+      if (err instanceof Error) setError(err.message);
+      else setError(String(err) || "Failed to submit task");
     }
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className={`
-     w-full
-     space-y-4
-     rounded-lg
-     border
-     p-4
-     dark:bg-zinc-900
-     border-zinc-200
-     dark:border-zinc-800
-     ${className}
-   `}
+      className={`w-full max-w-xl mx-auto ${className}`}
     >
-      <div>
-        <label className="block text-sm font-medium text-white">Title</label>
-        <input
-          value={values.title}
-          onChange={(e) => handleChange("title", e.target.value)}
-          className="
-        mt-1
-        w-full
-        border
-        p-2
-        rounded
-        bg-[color:var(--card-bg)]
-        text-zinc-200
-        border-theme
-      "
-          placeholder="Task title"
-          disabled={isLoading}
-          required
-        />
-      </div>
+      <div className="rounded-lg border border-gray-100 bg-white shadow-md p-6">
+        <header className="mb-4">
+          <h4 className="text-lg font-semibold text-slate-900">Create task</h4>
+          <p className="text-sm text-slate-500 mt-1">Quickly add a task with details</p>
+        </header>
 
-      <div>
-        <label className="block text-sm font-medium text-white">Description</label>
-        <textarea
-          value={values.description}
-          onChange={(e) => handleChange("description", e.target.value)}
-          className="
-        mt-1
-        w-full
-        border
-        p-2
-        rounded
-        bg-[color:var(--card-bg)]
-        text-zinc-200
-        border-theme
-      "
-          placeholder="Optional description"
-          rows={3}
-          disabled={isLoading}
-        />
-      </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700">Title</label>
+            <input
+              value={values.title}
+              onChange={(e) => handleChange("title", e.target.value)}
+              className="mt-2 w-full rounded-md border border-gray-200 px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-(--accent)"
+              placeholder="Task title"
+              disabled={isLoading}
+              required
+            />
+          </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm font-medium text-white">Status</label>
-          <select
-            value={values.status}
-            onChange={(e) => handleChange("status", e.target.value as TaskStatus)}
-            className="
-          mt-1
-          w-full
-          border
-          p-2
-          rounded
-          bg-[color:var(--card-bg)]
-          text-zinc-200
-          border-theme
-        "
-            disabled={isLoading}
-          >
-            <option value="TODO">TODO</option>
-            <option value="IN PROGRESS">IN PROGRESS</option>
-            <option value="DONE">DONE</option>
-          </select>
+          <div>
+            <label className="block text-sm font-medium text-slate-700">Description</label>
+            <textarea
+              value={values.description}
+              onChange={(e) => handleChange("description", e.target.value)}
+              className="mt-2 w-full rounded-md border border-gray-200 px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-(--accent)"
+              placeholder="Optional description"
+              rows={3}
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700">Status</label>
+              <select
+                value={values.status}
+                onChange={(e) => handleChange("status", e.target.value as TaskStatus)}
+                className="mt-2 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-(--accent)"
+                disabled={isLoading}
+              >
+                <option value="TODO">TODO</option>
+                <option value="IN PROGRESS">IN PROGRESS</option>
+                <option value="DONE">DONE</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700">Priority</label>
+              <select
+                value={values.priority}
+                onChange={(e) => handleChange("priority", e.target.value as TaskPriority)}
+                className="mt-2 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-(--accent)"
+                disabled={isLoading}
+              >
+                <option value="LOW">LOW</option>
+                <option value="MEDIUM">MEDIUM</option>
+                <option value="HIGH">HIGH</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700">Start date</label>
+              <input
+                type="date"
+                value={values.start_date}
+                onChange={(e) => handleChange("start_date", e.target.value)}
+                className="mt-2 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-(--accent)"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700">Due date</label>
+              <input
+                type="date"
+                value={values.due_date}
+                onChange={(e) => handleChange("due_date", e.target.value)}
+                className="mt-2 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-(--accent)"
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+
+          {error && <div className="text-sm text-red-600">{error}</div>}
+
+          <div className="flex items-center justify-end gap-3 pt-2">
+            {onCancel && (
+              <button
+                type="button"
+                onClick={onCancel}
+                className="px-4 py-2 rounded-md border border-gray-200 text-sm text-slate-700 hover:bg-gray-50"
+                disabled={isLoading}
+              >
+                Cancel
+              </button>
+            )}
+
+            <button
+              type="submit"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-(--accent) text-white text-sm font-medium shadow-sm hover:brightness-95 disabled:opacity-60"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : null}
+              {isLoading ? "Saving..." : submitText}
+            </button>
+          </div>
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-white">Priority</label>
-          <select
-            value={values.priority}
-            onChange={(e) => handleChange("priority", e.target.value as TaskPriority)}
-            className="
-          mt-1
-          w-full
-          border
-          p-2
-          rounded
-          bg-[color:var(--card-bg)]
-          text-zinc-200
-          border-theme
-        "
-            disabled={isLoading}
-          >
-            <option value="LOW">LOW</option>
-            <option value="MEDIUM">MEDIUM</option>
-            <option value="HIGH">HIGH</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm font-medium text-white">Start date</label>
-          <input
-            type="date"
-            value={values.start_date}
-            onChange={(e) => handleChange("start_date", e.target.value)}
-            className="
-          mt-1
-          w-full
-          border
-          p-2
-          rounded
-          bg-[color:var(--card-bg)]
-          text-zinc-200
-          border-theme
-        "
-            disabled={isLoading}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-white">Due date</label>
-          <input
-            type="date"
-            value={values.due_date}
-            onChange={(e) => handleChange("due_date", e.target.value)}
-            className="
-          mt-1
-          w-full
-          border
-          p-2
-          rounded
-          bg-[color:var(--card-bg)]
-          text-zinc-200
-          border-theme
-        "
-            disabled={isLoading}
-          />
-        </div>
-      </div>
-
-      {error && <div className="text-sm text-red-500">{error}</div>}
-
-      <div className="flex justify-end gap-2">
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="
-            px-3
-            py-2
-            rounded
-            border
-            border-theme
-            text-theme
-          "
-            disabled={isLoading}
-          >
-            Cancel
-          </button>
-        )}
-        <button
-          type="submit"
-          className="
-          px-4
-          py-2
-          rounded
-          bg-[color:var(--accent)]
-          text-white
-          disabled:opacity-50
-        "
-          disabled={isLoading}
-        >
-          {isLoading ? "Saving..." : submitText}
-        </button>
       </div>
     </form>
   );
