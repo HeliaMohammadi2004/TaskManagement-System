@@ -1,5 +1,5 @@
 import api from "./api";
-import { TaskPayload } from "@/types/api";
+import { TaskPayload, TimerResponse } from "@/types/api";
 
 export const getTasks = async (listId: number) => {
   const res = await api.get(`/lists/${listId}/tasks/`);
@@ -19,4 +19,14 @@ export const updateTask = async (id: number, payload: Partial<TaskPayload>) => {
 export const deleteTask = async (id: number) => {
   await api.delete(`/tasks/${id}/`);
   return id;
+};
+
+export const startTimer = async (id: number): Promise<TimerResponse> => {
+  const res = await api.post(`/tasks/${id}/start_timer/`);
+  return res.data;
+};
+
+export const stopTimer = async (id: number): Promise<TimerResponse> => {
+  const res = await api.post(`/tasks/${id}/stop_timer/`);
+  return res.data;
 };

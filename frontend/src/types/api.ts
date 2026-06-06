@@ -31,6 +31,10 @@ export interface Task {
   start_date?: string;
   assignee?: number | null;
   order: number;
+  // Time tracking fields
+  started_at?: string | null;
+  finished_at?: string | null;
+  duration?: string | null; // e.g. "0:05:23"
   created_at?: string;
   updated_at?: string;
 }
@@ -43,4 +47,9 @@ export interface TaskPayload {
   order?: number;
   due_date?: string;
   start_date?: string;
+}
+
+export interface TimerResponse {
+  message: string;
+  duration?: string;
 }

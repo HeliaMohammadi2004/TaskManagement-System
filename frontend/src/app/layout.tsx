@@ -9,22 +9,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-    >
-      <body>
-
+    <html lang="en" suppressHydrationWarning>
+      <body className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 antialiased">
         <AppProvider>
-
           <Navbar />
-
-          <main className="p-6">
+          <main className="p-6 max-w-screen-2xl mx-auto">
             {children}
           </main>
-
         </AppProvider>
-
       </body>
     </html>
   );

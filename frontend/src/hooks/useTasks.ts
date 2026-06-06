@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getTasks, createTask, updateTask, deleteTask } from "@/services/task";
+import { getTasks, createTask, updateTask, deleteTask, startTimer, stopTimer } from "@/services/task";
 import { Task, TaskPayload } from "@/types/api";
 
 export const useTasks = (listId: number) => {
@@ -11,7 +11,7 @@ export const useTasks = (listId: number) => {
     queryKey: ["tasks", listId],
     queryFn: () => getTasks(listId),
     enabled: !!listId,
-    staleTime: 1000 * 60,
+    staleTime: 1000 * 30, // کاهش به 30 ثانیه
   });
 
   const create = useMutation({
@@ -30,5 +30,18 @@ export const useTasks = (listId: number) => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks", listId] }),
   });
 
-  return { ...query, create, update, remove };
+  const timerStart = useMutation({
+    mutationFn: (id: number) => startTimer(id),
+    onSuccess: () =>
+      // refetchQueries به جای invalidateQueries — بلافاصله fetch میکنه صرف‌نظر از staleTime
+      queryClient.refetchQueries({ queryKey: ["tasks", listId] }),
+  });
+
+  const timerStop = useMutation({
+    mutationFn: (id: number) => stopTimer(id),
+    onSuccess: () =>
+      queryClient.refetchQueries({ queryKey: ["tasks", listId] }),
+  });
+
+  return { ...query, create, update, remove, timerStart, timerStop };
 };

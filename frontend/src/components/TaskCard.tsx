@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import TaskTimer from "./TaskTimer";
 
 type IconProps = React.SVGProps<SVGSVGElement> & { size?: number };
 
@@ -75,6 +76,9 @@ export interface Task {
   priority: "LOW" | "MEDIUM" | "HIGH";
   start_date?: string;
   due_date?: string;
+  started_at?: string | null;
+  finished_at?: string | null;
+  duration?: string | null;
   order: number;
   created_at?: string;
   updated_at?: string;
@@ -84,6 +88,10 @@ interface TaskCardProps {
   task: Task;
   onDelete: (id: number) => Promise<void>;
   onUpdate: (id: number, data: Partial<Task>) => Promise<void>;
+  onTimerStart?: (id: number) => Promise<void>;
+  onTimerStop?: (id: number) => Promise<void>;
+  isTimerStarting?: boolean;
+  isTimerStopping?: boolean;
 }
 
 const priorityStyles = {
@@ -98,7 +106,15 @@ const statusStyles = {
   DONE: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300",
 };
 
-export default function TaskCard({ task, onDelete, onUpdate }: TaskCardProps) {
+export default function TaskCard({
+  task,
+  onDelete,
+  onUpdate,
+  onTimerStart,
+  onTimerStop,
+  isTimerStarting = false,
+  isTimerStopping = false,
+}: TaskCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -117,69 +133,93 @@ export default function TaskCard({ task, onDelete, onUpdate }: TaskCardProps) {
   };
 
   const formatDate = (date?: string): string => {
-    if (!date) return "-";
+    if (!date) return "—";
     const d = new Date(date);
-    return isNaN(d.getTime()) ? "-" : d.toLocaleDateString();
+    return isNaN(d.getTime()) ? "—" : d.toLocaleDateString();
+  };
+
+  const handleTimerStart = async (id: number) => {
+    if (onTimerStart) await onTimerStart(id);
+  };
+
+  const handleTimerStop = async (id: number) => {
+    if (onTimerStop) await onTimerStop(id);
   };
 
   return (
     <>
-      <div className="group rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-sm transition-all hover:shadow-lg hover:-translate-y-1">
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <div className="flex-1">
-            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+      <div className="group rounded-2xl border border-zinc-200 dark:border-zinc-700/60 bg-white dark:bg-zinc-900 p-4 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
+        {/* Header */}
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 leading-snug">
               {task.title}
             </h3>
             {task.description && (
-              <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+              <p className="mt-1.5 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400 line-clamp-2">
                 {task.description}
               </p>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={() => setIsEditing(true)}
-              className="rounded-lg p-2 text-zinc-500 transition hover:bg-zinc-100 hover:text-blue-600 dark:hover:bg-zinc-800"
+              title="Edit task"
+              className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-blue-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-blue-400"
             >
-              <Pencil size={18} />
+              <Pencil size={16} />
             </button>
             <button
               disabled={isDeleting}
               onClick={handleDelete}
-              className="rounded-lg p-2 text-zinc-500 transition hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-950"
+              title="Delete task"
+              className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-zinc-500 dark:hover:bg-red-950/50 dark:hover:text-red-400 disabled:opacity-40"
             >
-              <Trash2 size={18} />
+              <Trash2 size={16} />
             </button>
           </div>
         </div>
 
-        <div className="mb-4 flex flex-wrap gap-2">
-          <span className={`rounded-full px-3 py-1 text-xs font-medium ${priorityStyles[task.priority]}`}>
-            <Flag size={12} className="inline mr-1" />
+        {/* Badges */}
+        <div className="mb-3 flex flex-wrap gap-2">
+          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${priorityStyles[task.priority]}`}>
+            <Flag size={11} />
             {task.priority}
           </span>
-          <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusStyles[task.status]}`}>
-            <CheckCircle2 size={12} className="inline mr-1" />
+          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[task.status]}`}>
+            <CheckCircle2 size={11} />
             {task.status}
           </span>
         </div>
 
-        <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
-          <div className="flex items-center gap-2">
-            <Calendar size={14} />
-            <span>Start: {formatDate(task.start_date)}</span>
+        {/* Dates */}
+        <div className="space-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-center gap-1.5">
+            <Calendar size={13} className="shrink-0" />
+            <span>Start: <span className="text-zinc-700 dark:text-zinc-300">{formatDate(task.start_date)}</span></span>
           </div>
-          <div className="flex items-center gap-2">
-            <Clock3 size={14} />
-            <span>Due: {formatDate(task.due_date)}</span>
+          <div className="flex items-center gap-1.5">
+            <Clock3 size={13} className="shrink-0" />
+            <span>Due: <span className="text-zinc-700 dark:text-zinc-300">{formatDate(task.due_date)}</span></span>
           </div>
-          {task.created_at && <div>Created: {formatDate(task.created_at)}</div>}
-          {task.updated_at && <div>Updated: {formatDate(task.updated_at)}</div>}
         </div>
+
+        {/* Timer Section */}
+        <TaskTimer
+          taskId={task.id}
+          startedAt={task.started_at}
+          finishedAt={task.finished_at}
+          duration={task.duration}
+          onStart={handleTimerStart}
+          onStop={handleTimerStop}
+          isStarting={isTimerStarting}
+          isStopping={isTimerStopping}
+        />
       </div>
 
+      {/* Edit modal */}
       {isEditing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto">
             <CreateTaskForm
               submitText="Update Task"
@@ -196,7 +236,7 @@ export default function TaskCard({ task, onDelete, onUpdate }: TaskCardProps) {
             />
             <button
               onClick={() => setIsEditing(false)}
-              className="mt-4 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 py-3 transition hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className="mt-3 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 py-3 text-sm font-medium text-zinc-600 dark:text-zinc-300 transition hover:bg-zinc-100 dark:hover:bg-zinc-800"
             >
               Cancel
             </button>

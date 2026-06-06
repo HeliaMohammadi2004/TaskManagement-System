@@ -1,17 +1,90 @@
 @import "tailwindcss";
 
+/* ─────────────────────────────────────────────
+   Design tokens — light mode defaults
+───────────────────────────────────────────── */
+:root {
+  --bg-page:       #f8fafc;
+  --bg-surface:    #ffffff;
+  --bg-subtle:     #f1f5f9;
+  --bg-muted:      #e2e8f0;
+
+  --border:        #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  --text-primary:  #0f172a;
+  --text-secondary:#475569;
+  --text-muted:    #94a3b8;
+
+  --brand:         #2563eb;
+  --brand-hover:   #1d4ed8;
+
+  color-scheme: light;
+}
+
+/* ─────────────────────────────────────────────
+   Dark mode overrides  (.dark on <html>)
+───────────────────────────────────────────── */
+.dark {
+  --bg-page:       #0f172a;
+  --bg-surface:    #1e293b;
+  --bg-subtle:     #1e293b;
+  --bg-muted:      #334155;
+
+  --border:        #334155;
+  --border-strong: #475569;
+
+  --text-primary:  #f1f5f9;
+  --text-secondary:#94a3b8;
+  --text-muted:    #64748b;
+
+  --brand:         #3b82f6;
+  --brand-hover:   #2563eb;
+
+  color-scheme: dark;
+}
+
+/* ─────────────────────────────────────────────
+   Base
+───────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+}
+
 html,
 body {
-  min-height: 100vh;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.15s ease;
 }
 
-body {
-  transition:
-    background-color 0.2s,
-    color 0.2s;
+/* ─────────────────────────────────────────────
+   Scrollbar (subtle in both modes)
+───────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--border-strong); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ─────────────────────────────────────────────
+   Form inputs — date picker fix for dark mode
+   Browsers inject system UI chrome for <input type="date">;
+   the color-scheme property tells them to use the dark variant.
+───────────────────────────────────────────── */
+.dark input[type="date"],
+.dark input[type="datetime-local"],
+.dark input[type="time"] {
+  color-scheme: dark;
 }
 
-.dark body {
-  background: #0f172a;
-  color: white;
+/* ─────────────────────────────────────────────
+   Focus ring — consistent brand colour
+───────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
 }
